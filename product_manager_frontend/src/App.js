@@ -11,6 +11,7 @@ import Layout from "./component/Layout";
 import Clients from "./pages/Clients";
 import Reports from "./pages/Reports";
 import Orders from "./pages/Orders";
+import Filters from "./pages/Filters";
 
 const App = () => {
     return (
@@ -47,6 +48,14 @@ const App = () => {
                             element={
                                 <ProtectedRoute>
                                     <Products/>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/filters"
+                            element={
+                                <ProtectedRoute>
+                                    <Filters/>
                                 </ProtectedRoute>
                             }
                         />

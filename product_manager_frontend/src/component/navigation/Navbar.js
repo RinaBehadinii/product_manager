@@ -24,6 +24,11 @@ const Navbar = () => {
                     <Link to="/orders" className={`hover:underline ${isActive("/orders")}`}>
                         Orders
                     </Link>
+                    {userRole === "Admin" && (
+                        <Link to="/filters" className={`hover:underline ${isActive("/filters")}`}>
+                            Filters
+                        </Link>
+                    )}
                     {(userRole === "Admin" || userRole === "Advanced User") && (
                         <Link to="/reports" className={`hover:underline ${isActive("/reports")}`}>
                             Reports

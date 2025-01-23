@@ -121,7 +121,7 @@ export function EditProduct({
         <button
             disabled={addingProduct}
             onClick={handleSave}
-            className={`${addingProduct ? "bg-gray-300 border-gray-300" : "bg-blue-400 border-blue-500"} border text-white px-2 mr-2 rounded-sm shadow-sm drop-shadow-sm`}
+            className={`${addingProduct ? "bg-gray-300 border-gray-300" : "bg-lime-500 border border-lime-600"} border text-white px-2 mr-2 rounded-sm shadow-sm drop-shadow-sm`}
         >
             Save
         </button>
