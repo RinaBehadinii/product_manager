@@ -149,8 +149,28 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
-            return Order.objects.all()
-        return Order.objects.filter(user=self.request.user)
+            queryset = Order.objects.all()
+        else:
+            queryset = Order.objects.filter(user=self.request.user)
+
+        # Apply filters for status, user, and order_date range
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        user_filter = self.request.query_params.get("user")
+        if user_filter and self.request.user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
+            queryset = queryset.filter(user_id=user_filter)
+
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        if start_date and end_date:
+            try:
+                queryset = queryset.filter(order_date__date__range=[start_date, end_date])
+            except ValueError:
+                raise ValidationError({"error": "Invalid date format. Use YYYY-MM-DD."})
+
+        return queryset
 
     def perform_create(self, serializer):
         order_details_data = self.request.data.get('order_details', [])

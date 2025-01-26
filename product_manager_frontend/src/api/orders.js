@@ -2,9 +2,10 @@ import api from "./api";
 
 const baseUrl = "/orders/";
 
-export const getOrders = async () => {
+export const getOrders = async (filters = {}) => {
     try {
-        const response = await api.get(baseUrl);
+        const queryParams = new URLSearchParams(filters).toString();
+        const response = await api.get(`${baseUrl}?${queryParams}`);
         return response.data;
     } catch (error) {
         throw new Error('Error fetching orders: ' + error.message);
