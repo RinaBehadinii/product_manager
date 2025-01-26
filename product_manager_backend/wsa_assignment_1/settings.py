@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'products',
     'rest_framework',
     'corsheaders',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'graphene_django'
 ]
 
 MIDDLEWARE = [
@@ -144,4 +145,8 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+GRAPHENE = {
+    'SCHEMA': 'products.schema.schema',
 }
