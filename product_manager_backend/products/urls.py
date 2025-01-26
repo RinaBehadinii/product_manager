@@ -9,22 +9,25 @@ from products.views import (
     UserViewSet, OrderViewSet, RegisterView, CustomTokenObtainPairView, ReportViewSet
 )
 
-router = DefaultRouter()
+router_v1 = DefaultRouter()
 
-router.register(r'categories', CategoryViewSet)
-router.register(r'brands', BrandViewSet)
-router.register(r'sizes', SizeViewSet)
-router.register(r'colors', ColorViewSet)
-router.register(r'genders', GenderViewSet)
-router.register(r'products', ProductViewSet)
-router.register(r'users', UserViewSet)
-router.register(r'reports', ReportViewSet)
-router.register(r'orders', OrderViewSet, basename='order')
+# Version 1 API endpoints
+router_v1.register(r'categories', CategoryViewSet)
+router_v1.register(r'brands', BrandViewSet)
+router_v1.register(r'sizes', SizeViewSet)
+router_v1.register(r'colors', ColorViewSet)
+router_v1.register(r'genders', GenderViewSet)
+router_v1.register(r'products', ProductViewSet)
+router_v1.register(r'users', UserViewSet)
+router_v1.register(r'reports', ReportViewSet)
+router_v1.register(r'orders', OrderViewSet, basename='order')
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('register/', RegisterView.as_view(), name='register'),
-    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/', include(router_v1.urls)),
+
+    path('api/v1/register/', RegisterView.as_view(), name='register_v1'),
+    path('api/v1/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair_v1'),
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh_v1'),
+
     path("graphql/", csrf_exempt(GraphQLView.as_view(graphiql=True))),
 ]

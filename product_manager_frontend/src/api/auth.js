@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const login = async (username, password) => {
-    const response = await api.post("/api/token/", username, password);
+    const response = await api.post("/token/", username, password);
     return response.data;
 };
 
@@ -11,6 +11,6 @@ export const register = async (username, email, password) => {
 };
 
 export const refreshToken = async (refresh) => {
-    const response = await api.post("/api/token/refresh/", {refresh});
+    const response = await api.post("/token/refresh/", {refresh});
     return response.data;
 };
