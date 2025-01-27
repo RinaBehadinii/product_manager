@@ -42,7 +42,8 @@ class RegisterView(APIView):
             return Response({'error': f'Could not assign default group: {str(e)}'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'message': 'User registered successfully!'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'User registered successfully!', '_links': {'self': request.build_absolute_uri()}},
+                        status=status.HTTP_201_CREATED)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -115,7 +116,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response({"error": "Price filters must be valid numbers."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
@@ -129,7 +130,11 @@ class ProductViewSet(viewsets.ModelViewSet):
             "name": product.name,
             "initial_quantity": product.quantity,
             "sold_quantity": sold_quantity,
-            "current_quantity": current_quantity
+            "current_quantity": current_quantity,
+            "_links": {
+                "self": request.build_absolute_uri(),
+                "product_details": request.build_absolute_uri(f"/products/{product.id}/")
+            }
         })
 
 
@@ -201,13 +206,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         new_status = request.data.get('status')
         if new_status in dict(Order.STATUS_CHOICES).keys():
             order.update_status(new_status)
-            return Response({'status': 'Order status updated'})
+            return Response({'status': 'Order status updated', '_links': {'self': request.build_absolute_uri()}})
         return Response({'error': 'Invalid status.'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     def my_orders(self, request):
         orders = self.get_queryset().filter(user=self.request.user)
-        serializer = self.get_serializer(orders, many=True)
+        serializer = self.get_serializer(orders, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -224,7 +229,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def groups(self, request, pk=None):
         user = get_object_or_404(User, pk=pk)
         groups = user.groups.values_list('name', flat=True)
-        return Response({'groups': list(groups)})
+        return Response({'groups': list(groups), '_links': {'self': request.build_absolute_uri()}})
 
 
 class ReportViewSet(viewsets.ModelViewSet):
@@ -237,15 +242,21 @@ class ReportViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
-    def daily_earnings(self, request):
-        today = timezone.now().date()
-        orders = Order.objects.filter(order_date__date=today)
-        total_earnings = sum(
-            detail.price_at_purchase * detail.quantity for order in orders for detail in order.order_details.all())
-        return Response({"date": today, "total_earnings": total_earnings})
-
-    @action(detail=False, methods=['get'])
     def top_selling_products(self, request):
-        top_products = OrderDetail.objects.values('product__name').annotate(total_sold=Sum('quantity')).order_by(
-            '-total_sold')[:10]
-        return Response(top_products)
+        top_products = OrderDetail.objects.values('product__id', 'product__name').annotate(
+            total_sold=Sum('quantity')
+        ).order_by('-total_sold')[:10]
+
+        response_data = [
+            {
+                "product_id": product['product__id'],
+                "name": product['product__name'],
+                "total_sold": product['total_sold'],
+                "_links": {
+                    "self": request.build_absolute_uri(f"/api/v1/products/{product['product__id']}/"),
+                }
+            }
+            for product in top_products
+        ]
+
+        return Response(response_data)
