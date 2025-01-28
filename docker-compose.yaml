@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./product_manager_backend
+    container_name: product_manager_backend
+    volumes:
+      - ./product_manager_backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      DATABASE_NAME: products-db
+      DATABASE_USER: root
+      DATABASE_PASSWORD: ""
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./product_manager_frontend
+    container_name: product_manager_frontend
+    volumes:
+      - ./product_manager_frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-database
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: products-db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+volumes:
+  mysql_data:
