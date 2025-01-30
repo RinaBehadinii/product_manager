@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.core.cache import cache
 
 from products.serializer import (
     CategorySerializer, BrandSerializer, SizeSerializer, ColorSerializer, GenderSerializer,
@@ -91,6 +92,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def search(self, request):
+        cache_key = f"product_search_{request.get_full_path()}"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)
+
         queryset = Product.objects.all()
 
         filters = {
@@ -117,15 +124,21 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response({"error": "Price filters must be valid numbers."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        cache.set(cache_key, serializer.data, timeout=300)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def quantity(self, request, pk=None):
+        cache_key = f"product_quantity_{pk}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         product = get_object_or_404(Product, pk=pk)
         sold_quantity = OrderDetail.objects.filter(product=product).aggregate(total_sold=Sum('quantity'))[
                             'total_sold'] or 0
         current_quantity = product.quantity - sold_quantity
-        return Response({
+        response_data = {
             "product_id": product.id,
             "name": product.name,
             "initial_quantity": product.quantity,
@@ -135,7 +148,9 @@ class ProductViewSet(viewsets.ModelViewSet):
                 "self": request.build_absolute_uri(),
                 "product_details": request.build_absolute_uri(f"/products/{product.id}/")
             }
-        })
+        }
+        cache.set(cache_key, response_data, timeout=300)
+        return Response(response_data)
 
 
 class DiscountViewSet(viewsets.ModelViewSet):
@@ -153,6 +168,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        cache_key = f"user_orders_{self.request.user.id}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
         if self.request.user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
             queryset = Order.objects.all()
         else:
@@ -175,6 +195,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             except ValueError:
                 raise ValidationError({"error": "Invalid date format. Use YYYY-MM-DD."})
 
+        cache.set(cache_key, queryset, timeout=300)
         return queryset
 
     def perform_create(self, serializer):
@@ -211,8 +232,14 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def my_orders(self, request):
-        orders = self.get_queryset().filter(user=self.request.user)
+        cache_key = f"my_orders_{request.user.id}"
+        cached_orders = cache.get(cache_key)
+        if cached_orders:
+            return Response(cached_orders)
+
+        orders = self.get_queryset().filter(user=request.user)
         serializer = self.get_serializer(orders, many=True, context={'request': request})
+        cache.set(cache_key, serializer.data, timeout=300)
         return Response(serializer.data)
 
 

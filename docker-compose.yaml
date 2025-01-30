@@ -11,12 +11,14 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       - db
+      - redis
     environment:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      REDIS_URL: redis://redis:6379/1
     command: >
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
@@ -42,6 +44,13 @@ services:
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   mysql_data:
