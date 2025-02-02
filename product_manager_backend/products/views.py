@@ -2,9 +2,9 @@ from django.contrib.auth.models import User, Group
 from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from haystack.query import SearchQuerySet
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -287,3 +287,45 @@ class ReportViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(response_data)
+
+
+@api_view(['GET'])
+def search_products_solr(request):
+    query = request.GET.get('q', '')
+
+    if not query:
+        return Response(
+            {"error": "Query parameter 'q' is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    search_results = SearchQuerySet().models(Product).filter(content=query)
+
+    product_ids = [result.object.id for result in search_results]
+
+    products = Product.objects.filter(id__in=product_ids)
+
+    serializer = ProductSerializer(products, many=True, context={'request': request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def search_orders_solr(request):
+    query = request.GET.get('q', '')
+
+    if not query:
+        return Response(
+            {"error": "Query parameter 'q' is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    search_results = SearchQuerySet().models(Order).filter(content=query)
+
+    order_ids = [result.object.id for result in search_results]
+
+    orders = Order.objects.filter(id__in=order_ids)
+
+    serializer = OrderSerializer(orders, many=True, context={'request': request})
+
+    return Response(serializer.data, status=status.HTTP_200_OK)

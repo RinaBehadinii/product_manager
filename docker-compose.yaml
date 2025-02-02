@@ -12,6 +12,7 @@ services:
     depends_on:
       - db
       - redis
+      - solr
     environment:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
@@ -19,6 +20,7 @@ services:
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       REDIS_URL: redis://redis:6379/1
+      SOLR_URL: http://solr:8983/solr/mycore
     command: >
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
@@ -51,6 +53,16 @@ services:
     restart: always
     ports:
       - "6379:6379"
+
+  solr:
+    image: solr:latest
+    container_name: solr
+    restart: always
+    ports:
+      - "8983:8983"
+    command:
+      - solr-precreate
+      - mycore
 
 volumes:
   mysql_data:

@@ -1,0 +1,10 @@
+{{ object.name }}
+{{ object.description }}
+{{ object.price }}
+{{ object.discount }}
+{{ object.quantity }}
+{{ object.category.name }}
+{{ object.brand.name }}
+{{ object.color.name }}
+{{ object.size.size }}
+{{ object.gender.type }}

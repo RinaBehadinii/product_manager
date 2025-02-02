@@ -9,7 +9,8 @@ from drf_yasg import openapi
 
 from products.views import (
     CategoryViewSet, BrandViewSet, SizeViewSet, ColorViewSet, GenderViewSet, ProductViewSet,
-    UserViewSet, OrderViewSet, RegisterView, CustomTokenObtainPairView, ReportViewSet
+    UserViewSet, OrderViewSet, RegisterView, CustomTokenObtainPairView, ReportViewSet, search_products_solr,
+    search_orders_solr
 )
 
 # Swagger/OpenAPI schema view
@@ -50,4 +51,8 @@ urlpatterns = [
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh_v1'),
 
     path("graphql/execute/", csrf_exempt(GraphQLView.as_view())),
+
+    path('api/v1/search/products/', search_products_solr, name='search_products_solr'),
+    path('api/v1/search/orders/', search_orders_solr, name='search_orders_solr'),
+
 ]
