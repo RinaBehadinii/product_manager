@@ -168,34 +168,40 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        cache_key = f"user_orders_{self.request.user.id}"
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return cached_data
+        user = self.request.user
 
-        if self.request.user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
+        if user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
             queryset = Order.objects.all()
         else:
-            queryset = Order.objects.filter(user=self.request.user)
+            queryset = Order.objects.filter(user=user)
 
-        # Apply filters for status, user, and order_date range
         status_filter = self.request.query_params.get("status")
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
         user_filter = self.request.query_params.get("user")
-        if user_filter and self.request.user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
+        if user_filter and user.groups.filter(name__in=["Admin", "Advanced User"]).exists():
             queryset = queryset.filter(user_id=user_filter)
 
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
+
         if start_date and end_date:
             try:
                 queryset = queryset.filter(order_date__date__range=[start_date, end_date])
             except ValueError:
                 raise ValidationError({"error": "Invalid date format. Use YYYY-MM-DD."})
+        elif start_date:
+            try:
+                queryset = queryset.filter(order_date__date__gte=start_date)
+            except ValueError:
+                raise ValidationError({"error": "Invalid start_date format. Use YYYY-MM-DD."})
+        elif end_date:
+            try:
+                queryset = queryset.filter(order_date__date__lte=end_date)
+            except ValueError:
+                raise ValidationError({"error": "Invalid end_date format. Use YYYY-MM-DD."})
 
-        cache.set(cache_key, queryset, timeout=300)
         return queryset
 
     def perform_create(self, serializer):
@@ -232,14 +238,16 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def my_orders(self, request):
-        cache_key = f"my_orders_{request.user.id}"
+        cache_key = f"my_orders_{request.user.id}_{request.GET.urlencode()}"  # Unique cache key for filters
         cached_orders = cache.get(cache_key)
+
         if cached_orders:
             return Response(cached_orders)
 
         orders = self.get_queryset().filter(user=request.user)
         serializer = self.get_serializer(orders, many=True, context={'request': request})
-        cache.set(cache_key, serializer.data, timeout=300)
+
+        cache.set(cache_key, serializer.data, timeout=300)  # Cache serialized data
         return Response(serializer.data)
 
 
