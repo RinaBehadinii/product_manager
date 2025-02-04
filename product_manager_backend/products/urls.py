@@ -1,11 +1,14 @@
+import django_prometheus
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
+from django_prometheus import exports
 from graphene_django.views import GraphQLView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django_prometheus.exports import ExportToDjangoView  # ✅ Correct import
 
 from products.views import (
     CategoryViewSet, BrandViewSet, SizeViewSet, ColorViewSet, GenderViewSet, ProductViewSet,
@@ -55,4 +58,5 @@ urlpatterns = [
     path('api/v1/search/products/', search_products_solr, name='search_products_solr'),
     path('api/v1/search/orders/', search_orders_solr, name='search_orders_solr'),
 
+    path("metrics/", ExportToDjangoView)
 ]

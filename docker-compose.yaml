@@ -25,6 +25,8 @@ services:
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:${BACKEND_PORT}"
+    networks:
+      - product_manager_default
 
   frontend:
     build:
@@ -35,6 +37,8 @@ services:
       - /app/node_modules
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    networks:
+      - product_manager_default
 
   db:
     image: mysql:8.0
@@ -46,6 +50,8 @@ services:
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+    networks:
+      - product_manager_default
 
   redis:
     image: redis:latest
@@ -53,6 +59,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      - product_manager_default
 
   solr:
     image: solr:latest
@@ -63,6 +71,50 @@ services:
     command:
       - solr-precreate
       - mycore
+    networks:
+      - product_manager_default
+
+  mysqld-exporter:
+    image: quay.io/prometheus/mysqld-exporter
+    container_name: mysqld-exporter
+    restart: unless-stopped
+    ports:
+      - "9104:9104"
+    command:
+      - "--mysqld.username=exporter:exporterpassword"
+      - "--mysqld.address=db:3306"
+    networks:
+      - product_manager_default
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+      - mysqld-exporter
+    networks:
+      - product_manager_default
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3030:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - product_manager_default
+
+networks:
+  product_manager_default:
+    driver: bridge
 
 volumes:
   mysql_data:
+  grafana-data:

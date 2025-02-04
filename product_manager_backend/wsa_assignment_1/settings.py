@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-e34#jvm&1lw)aiz&w$@&)-g+wz06yf*ums*rec0sfledbvrya4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["product_manager_backend", "localhost", "127.0.0.1", "*"]
 
 # Application definition
 
@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'graphene_django',
     'drf_yasg',
-    'haystack'
+    'haystack',
+    'django_prometheus'
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware'
 ]
 
 ROOT_URLCONF = 'wsa_assignment_1.urls'
