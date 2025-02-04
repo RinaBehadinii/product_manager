@@ -51,7 +51,14 @@ const Filters = () => {
     const handleCreate = async () => {
         if (!newFilterValue) return;
         try {
-            await api.post(`/${selectedFilterType}/`, {name: newFilterValue});
+            const payload =
+                selectedFilterType === "genders"
+                    ? {type: newFilterValue}
+                    : selectedFilterType === "sizes"
+                        ? {size: newFilterValue}
+                        : {name: newFilterValue};
+
+            await api.post(`/${selectedFilterType}/`, payload);
             setNewFilterValue("");
             loadFilters(selectedFilterType);
         } catch (err) {
@@ -71,13 +78,26 @@ const Filters = () => {
     const handleUpdate = async (id) => {
         if (!editValues[id]) return;
         try {
-            await api.put(`/${selectedFilterType}/${id}/`, {name: editValues[id]});
+            const payload =
+                selectedFilterType === "genders"
+                    ? {type: editValues[id]}
+                    : selectedFilterType === "sizes"
+                        ? {size: editValues[id]}
+                        : {name: editValues[id]};
+
+            await api.put(`/${selectedFilterType}/${id}/`, payload);
             setEditValues((prev) => ({...prev, [id]: ""}));
             setEditingId(null);
             loadFilters(selectedFilterType);
         } catch (err) {
             setError("Error updating filter");
         }
+    };
+
+    const getDisplayValue = (item) => {
+        if (selectedFilterType === "genders") return item.type;
+        if (selectedFilterType === "sizes") return item.size;
+        return item.name;
     };
 
     return (
@@ -111,7 +131,6 @@ const Filters = () => {
                         onChange={(e) => setNewFilterValue(e.target.value)}
                         className="p-2 text-sm border rounded flex-grow"
                     />
-
                 </div>
                 <div className="flex justify-end mt-4 -mr-2">
                     <button
@@ -121,7 +140,6 @@ const Filters = () => {
                         Add
                     </button>
                 </div>
-
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -136,7 +154,7 @@ const Filters = () => {
                                 <>
                                     <input
                                         type="text"
-                                        defaultValue={item.name}
+                                        defaultValue={getDisplayValue(item)}
                                         onChange={(e) =>
                                             setEditValues((prev) => ({...prev, [item.id]: e.target.value}))
                                         }
@@ -157,7 +175,7 @@ const Filters = () => {
                                 </>
                             ) : (
                                 <>
-                                    <span className="flex-grow text-gray-800 ml-1">{item.name}</span>
+                                    <span className="flex-grow text-gray-800 ml-1">{getDisplayValue(item)}</span>
                                     <button
                                         onClick={() => setEditingId(item.id)}
                                         className="bg-blue-400 border-blue-500 border text-white w-20 rounded-sm shadow-sm drop-shadow-sm"
