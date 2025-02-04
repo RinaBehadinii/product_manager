@@ -2,6 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from haystack.query import SearchQuerySet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
@@ -275,6 +276,14 @@ class ReportViewSet(viewsets.ModelViewSet):
         if self.action in ['daily_earnings', 'top_selling_products']:
             return [IsAdvancedUser()]
         return [IsAuthenticated()]
+
+    @action(detail=False, methods=['get'])
+    def daily_earnings(self, request):
+        today = timezone.now().date()
+        orders = Order.objects.filter(order_date__date=today)
+        total_earnings = sum(
+            detail.price_at_purchase * detail.quantity for order in orders for detail in order.order_details.all())
+        return Response({"date": today, "total_earnings": total_earnings})
 
     @action(detail=False, methods=['get'])
     def top_selling_products(self, request):

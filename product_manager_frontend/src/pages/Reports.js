@@ -42,7 +42,7 @@ const Reports = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {topProducts.map((product, index) => (
                         <div key={index} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                            <h3 className="text-xl font-semibold text-gray-800">{product.product__name}</h3>
+                            <h3 className="text-xl font-semibold text-gray-800">{product.name}</h3>
                             <p className="text-gray-600 mt-2">
                                 <span className="font-medium text-gray-800">Total Sold:</span> {product.total_sold}
                             </p>
