@@ -111,6 +111,17 @@ services:
     networks:
       - product_manager_default
 
+  k6:
+    image: grafana/k6
+    container_name: k6-load-tester
+    volumes:
+      - ./k6:/scripts
+    depends_on:
+      - backend
+    networks:
+      - product_manager_default
+    entrypoint: [ "sh", "-c", "sleep infinity" ]
+
 networks:
   product_manager_default:
     driver: bridge
