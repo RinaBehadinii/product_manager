@@ -19,8 +19,8 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      REDIS_URL: redis://redis:6379/1
-      SOLR_URL: http://solr:8983/solr/mycore
+      REDIS_URL: redis://redis:${REDIS_PORT}/1
+      SOLR_URL: http://solr:${SOLR_PORT}/solr/mycore
     command: >
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
@@ -58,7 +58,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     networks:
       - product_manager_default
 
@@ -67,7 +67,7 @@ services:
     container_name: solr
     restart: always
     ports:
-      - "8983:8983"
+      - "${SOLR_PORT}:${SOLR_PORT}"
     command:
       - solr-precreate
       - mycore
@@ -79,10 +79,10 @@ services:
     container_name: mysqld-exporter
     restart: unless-stopped
     ports:
-      - "9104:9104"
+      - "${MYSQL_EXPORTER_PORT}:${MYSQL_EXPORTER_PORT}"
     command:
-      - "--mysqld.username=exporter:exporterpassword"
-      - "--mysqld.address=db:3306"
+      - "--mysqld.username=${MYSQL_EXPORTER_USER}"
+      - "--mysqld.address=${DATABASE_HOST}:${DATABASE_PORT}"
     networks:
       - product_manager_default
 
@@ -92,7 +92,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_INTERNAL_PORT}"
     depends_on:
       - backend
       - mysqld-exporter
@@ -103,7 +103,7 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - "3030:3000"
+      - "${GRAFANA_PORT}:${GRAFANA_INTERNAL_PORT}"
     volumes:
       - grafana-data:/var/lib/grafana
     depends_on:

@@ -1,14 +1,12 @@
-import django_prometheus
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
-from django_prometheus import exports
 from graphene_django.views import GraphQLView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from django_prometheus.exports import ExportToDjangoView  # ✅ Correct import
+from django_prometheus.exports import ExportToDjangoView
 
 from products.views import (
     CategoryViewSet, BrandViewSet, SizeViewSet, ColorViewSet, GenderViewSet, ProductViewSet,

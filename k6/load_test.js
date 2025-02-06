@@ -2,8 +2,8 @@ import http from 'k6/http';
 import {check, sleep} from 'k6';
 
 const BASE_URL = 'http://backend:8000/api/v1';
-const USERNAME = 'rina';
-const PASSWORD = 'rinarina';
+const USERNAME = '';
+const PASSWORD = '';
 
 function getToken() {
     let loginPayload = JSON.stringify({
