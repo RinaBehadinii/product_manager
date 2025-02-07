@@ -36,7 +36,7 @@ const Navbar = () => {
                     )}
                     {userRole === "Admin" && (
                         <Link to="/clients" className={`hover:underline ${isActive("/clients")}`}>
-                            Clients
+                            Users
                         </Link>
                     )}
                     <button

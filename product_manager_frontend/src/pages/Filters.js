@@ -102,7 +102,7 @@ const Filters = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-blue-950 text-3xl font-bold mb-6">Filters Management</h1>
+            <h1 className="text-blue-950 text-3xl font-bold mb-6">Filters</h1>
 
             {error && <p className="text-red-500">{error}</p>}
 

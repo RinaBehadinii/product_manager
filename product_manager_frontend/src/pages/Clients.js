@@ -39,7 +39,7 @@ const Clients = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-blue-950 text-2xl font-bold mb-6">Clients</h1>
+            <h1 className="text-blue-950 text-2xl font-bold mb-6">Users</h1>
             <div className="flex flex-col gap-4">
                 {clients.map((client) => (
                     <div
