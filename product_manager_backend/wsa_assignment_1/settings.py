@@ -187,7 +187,7 @@ DATABASES = {
         'NAME': os.getenv('DATABASE_NAME', 'products-db'),
         'USER': os.getenv('DATABASE_USER', 'root'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'HOST': os.getenv('DATABASE_HOST', 'db'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
     }
 }
