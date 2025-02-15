@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: staging
+data:
+  BACKEND_PORT: "8000"
+  DATABASE_HOST: "db"
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: "products-db"
+  DATABASE_USER: "root"
+  REDIS_URL: "redis://redis:6379/1"
